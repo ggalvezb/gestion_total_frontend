@@ -53,7 +53,7 @@ export const TRANSICIONES = {
   aprobada:   ['en_compra', 'rechazada'],
   en_compra:  [],
   comprada:   ['despachado'],
-  despachado: [],
+  despachado: ['comprada'],
   rechazada:  ['borrador'],
   expirada:   ['borrador'],
 }

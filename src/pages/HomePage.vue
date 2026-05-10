@@ -189,8 +189,8 @@ const stats = computed(() => {
   return [
     { label: 'Total cotizaciones', value: list.length, color: 'var(--text)' },
     { label: 'En proceso', value: list.filter(c => ['enviada','aprobada','en_compra'].includes(c.estado)).length, color: 'var(--accent)' },
-    { label: 'Facturado', value: fmt(list.filter(c=>c.estado==='comprada').reduce((s,c)=>s+(c.calculos?.precio_venta_total||0),0)), color: 'var(--success)' },
-    { label: 'Utilidad',  value: fmt(list.filter(c=>c.estado==='comprada').reduce((s,c)=>s+(c.calculos?.utilidad_monto||0),0)), color: 'var(--info)' },
+    { label: 'Facturado', value: fmt(list.filter(c=>['comprada','despachado'].includes(c.estado)).reduce((s,c)=>s+(c.calculos?.precio_venta_total||0),0)), color: 'var(--success)' },
+    { label: 'Utilidad',  value: fmt(list.filter(c=>['comprada','despachado'].includes(c.estado)).reduce((s,c)=>s+(c.calculos?.utilidad_monto||0),0)), color: 'var(--info)' },
   ]
 })
 

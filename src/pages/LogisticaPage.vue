@@ -94,6 +94,7 @@
               @add-parcial="openParcial(item)"
               @edit-parcial="openEditParcial"
               @delete-parcial="handleDeleteParcial"
+              @mark-recibido="handleMarkRecibido"
             />
           </template>
         </template>
@@ -318,6 +319,15 @@ async function handleDeleteParcial({ itemId, idx }) {
   } catch {}
 }
 
+async function handleMarkRecibido({ itemId, idx }) {
+  try {
+    await compraService.actualizarParcial(itemId, idx, { estado: 'recibido' })
+    qc.invalidateQueries({ queryKey: ['compra', selectedId.value] })
+    qc.invalidateQueries({ queryKey: ['cotizaciones-logistica'] })
+    toast.success('Marcado como recibido')
+  } catch {}
+}
+
 // ── Upload modal ──────────────────────────────────────────
 const showUpload  = ref(false)
 const savingUpload= ref(false)
@@ -378,11 +388,12 @@ const uploadZoneStyle  = { border:'2px dashed var(--border)', borderRadius:'6px'
 const ModalLabel  = defineComponent({ setup: (_,{slots})=>()=>h('label',{style:{display:'block',fontSize:'11px',letterSpacing:'.08em',textTransform:'uppercase',color:'var(--text3)',fontWeight:600,marginBottom:'5px'}},slots.default?.()) })
 const ModalInput  = defineComponent({ props:['modelValue','type','placeholder','min'],emits:['update:modelValue'], setup: (p,{emit})=>()=>h('input',{value:p.modelValue,type:p.type||'text',placeholder:p.placeholder,min:p.min,onInput:e=>emit('update:modelValue',e.target.value),style:{width:'100%',background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:'6px',padding:'9px 12px',color:'var(--text)',fontFamily:"'Instrument Sans',sans-serif",fontSize:'13px',outline:'none'}}) })
 const DocGroup    = defineComponent({ props:['title','color'], setup: (p,{slots})=>()=>h('div',{style:{background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:'10px',padding:'14px'}},[h('div',{style:{fontSize:'10px',textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600,marginBottom:'10px',color:p.color,display:'flex',alignItems:'center',gap:'6px'}},[h('span',{style:{width:'6px',height:'6px',borderRadius:'50%',background:'currentColor',display:'inline-block'}}),p.title]),slots.default?.()])})
-const DocItem     = defineComponent({ props:['doc'],emits:['delete'], setup: (p,{emit})=>()=>h('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'7px 0',borderBottom:'1px solid var(--border)'}},[h('div',{style:{width:'28px',height:'28px',borderRadius:'5px',background:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',color:'var(--text2)',flexShrink:0,fontFamily:"'DM Mono',monospace"}},'PDF'),h('div',{style:{flex:1}},[h('div',{style:{fontSize:'12px'}},p.doc.nombre_archivo),h('div',{style:{fontSize:'11px',color:'var(--text3)'}},`${fmtFecha(p.doc.subido_en)}${p.doc.monto?` · ${fmt(p.doc.monto)}`:''}`)]),h('button',{onClick:()=>emit('delete'),style:{background:'none',border:'none',cursor:'pointer',color:'var(--text3)'}},'🗑')]) })
+const DocItem     = defineComponent({ props:['doc'],emits:['delete'], setup: (p,{emit})=>()=>h('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'7px 0',borderBottom:'1px solid var(--border)'}},[h('div',{style:{width:'28px',height:'28px',borderRadius:'5px',background:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',color:'var(--text2)',flexShrink:0,fontFamily:"'DM Mono',monospace"}},'PDF'),h('div',{style:{flex:1}},[h('div',{style:{fontSize:'12px'}},p.doc.nombre_archivo),h('div',{style:{fontSize:'11px',color:'var(--text3)'}},`${fmtFecha(p.doc.subido_en)}${p.doc.monto?` · ${fmt(p.doc.monto)}`:''}`)]),h('div',{style:{display:'flex',gap:'4px'}},[h('a',{href:p.doc.url_descarga,target:'_blank',rel:'noopener',title:'Descargar',style:{background:'none',border:'none',cursor:'pointer',color:'var(--text3)',textDecoration:'none',width:'24px',height:'24px',display:'flex',alignItems:'center',justifyContent:'center'}},'⬇'),h('button',{onClick:()=>emit('delete'),title:'Eliminar',style:{background:'none',border:'none',cursor:'pointer',color:'var(--text3)'}},'🗑')])]) })
 const DocItemEmpty= defineComponent({ props:['label'], setup: (p)=>()=>h('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'7px 0',borderBottom:'1px solid var(--border)',opacity:.45}},[h('div',{style:{width:'28px',height:'28px',borderRadius:'5px',background:'var(--surface)',border:'1px dashed var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'11px',color:'var(--text3)',flexShrink:0}},'—'),h('div',{style:{flex:1}},[h('div',{style:{fontSize:'12px',color:'var(--text3)'}},p.label),h('div',{style:{fontSize:'11px',color:'var(--text3)'}},'Pendiente')])]) })
-const ItemCard    = defineComponent({ props:['item'],emits:['add-parcial','edit-parcial','delete-parcial'], setup: (p,{emit})=>{
+const ItemCard    = defineComponent({ props:['item'],emits:['add-parcial','edit-parcial','delete-parcial','mark-recibido'], setup: (p,{emit})=>{
   const pct = computed(()=>p.item.cantidad_total>0?(p.item.cantidad_comprada/p.item.cantidad_total)*100:0)
   const iconBtn = (color, icon, onClick) => h('button',{onClick,style:{background:'transparent',border:`1px solid ${color==='danger'?'rgba(239,68,68,.3)':'var(--border)'}`,borderRadius:'4px',width:'22px',height:'22px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',color:color==='danger'?'rgb(239,68,68)':'var(--text3)',flexShrink:0}},h(icon,{size:11}))
+  const estadoBadge = (estado) => h('span',{style:{display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:'20px',fontSize:'10px',fontWeight:600,whiteSpace:'nowrap',background:estado==='recibido'?'rgba(106,170,122,.15)':'rgba(201,168,76,.12)',color:estado==='recibido'?'#4e9660':'var(--accent)',border:`1px solid ${estado==='recibido'?'rgba(106,170,122,.3)':'rgba(201,168,76,.3)'}`}},estado==='recibido'?'Recibido':'Comprado')
   return ()=>h('div',{style:{background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:'10px',padding:'14px 16px',marginBottom:'10px'}},[
     h('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px'}},[
       h('div',{style:{fontWeight:500,flex:1,fontSize:'13px'}},p.item.producto_desc),
@@ -391,14 +402,18 @@ const ItemCard    = defineComponent({ props:['item'],emits:['add-parcial','edit-
     h('div',{style:{height:'4px',background:'var(--border)',borderRadius:'2px',marginBottom:'10px',overflow:'hidden'}},[
       h('div',{style:{height:'100%',width:pct.value+'%',background:p.item.completo?'var(--success)':'var(--accent)',borderRadius:'2px',transition:'width .3s'}})
     ]),
-    ...(p.item.parciales||[]).map((parc,idx)=>h('div',{style:{display:'grid',gridTemplateColumns:'1fr auto auto auto auto',gap:'8px',alignItems:'center',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'6px',padding:'7px 10px',fontSize:'12px',marginBottom:'6px'}},[
-      h('span',{style:{fontWeight:500}},parc.proveedor),
-      h('span',{style:{fontFamily:"'DM Mono',monospace",color:'var(--text2)'}},`× ${parc.cantidad} uds`),
-      h('span',{style:{fontFamily:"'DM Mono',monospace"}},fmt(parc.precio_unit)+' c/u'),
-      h('span',{style:{color:'var(--text3)'}},fmtFecha(parc.fecha)),
-      h('div',{style:{display:'flex',gap:'4px'}},[
-        iconBtn('neutral', Pencil, ()=>emit('edit-parcial',{item:p.item,idx})),
-        iconBtn('danger', Trash2, ()=>emit('delete-parcial',{itemId:p.item._id,idx})),
+    ...(p.item.parciales||[]).map((parc,idx)=>h('div',{style:{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'6px',padding:'8px 10px',fontSize:'12px',marginBottom:'6px'}},[
+      h('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}},[
+        h('span',{style:{fontWeight:500,flex:1}},parc.proveedor),
+        h('span',{style:{fontFamily:"'DM Mono',monospace",color:'var(--text2)'}},`× ${parc.cantidad} uds`),
+        h('span',{style:{fontFamily:"'DM Mono',monospace"}},fmt(parc.precio_unit)+' c/u'),
+        h('span',{style:{color:'var(--text3)'}},fmtFecha(parc.fecha)),
+        estadoBadge(parc.estado||'comprado'),
+        h('div',{style:{display:'flex',gap:'4px'}},[
+          parc.estado !== 'recibido' ? h('button',{onClick:()=>emit('mark-recibido',{itemId:p.item._id,idx}),title:'Marcar como recibido',style:{background:'transparent',border:'1px solid rgba(106,170,122,.3)',borderRadius:'4px',padding:'2px 8px',fontSize:'10px',fontWeight:600,color:'#4e9660',cursor:'pointer',whiteSpace:'nowrap'}},'✓ Recibido') : null,
+          iconBtn('neutral', Pencil, ()=>emit('edit-parcial',{item:p.item,idx})),
+          iconBtn('danger', Trash2, ()=>emit('delete-parcial',{itemId:p.item._id,idx})),
+        ]),
       ]),
     ])),
     !p.item.completo?h('button',{onClick:()=>emit('add-parcial'),style:{background:'transparent',border:'1px dashed var(--border)',borderRadius:'6px',color:'var(--text2)',fontSize:'12px',padding:'7px 12px',cursor:'pointer',fontFamily:"'Instrument Sans',sans-serif",width:'100%',marginTop:'4px'}},'+ Agregar compra parcial'):null,
