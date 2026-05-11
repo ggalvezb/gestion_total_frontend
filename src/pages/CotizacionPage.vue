@@ -306,7 +306,7 @@ th:last-child,th:nth-last-child(2),th:nth-last-child(3){text-align:right}tbody t
 <table><thead><tr><th>#</th><th>Descripción</th><th style="text-align:right">Cant.</th><th style="text-align:right">Val. Unit. ($)</th><th style="text-align:right">Total ($)</th></tr></thead><tbody>${rows}</tbody></table>
 <div style="display:flex;justify-content:flex-end"><div class="tbox"><div class="trow"><span>Neto</span><span>$ ${_n(neto)}</span></div><div class="trow"><span>IVA (19%)</span><span>$ ${_n(iva)}</span></div><div class="trow"><span>TOTAL</span><span>$ ${_n(total)}</span></div></div></div>
 <p style="font-size:12px;color:#555;margin-bottom:14px">Días de despacho: <strong>${despacho.value||3} días</strong></p>
-<div class="pay"><div class="pay-t">Datos de Pago</div><p>Banco Santander — Cuenta Corriente N° 70877171</p><p>Nombre: Gonzalo Galvez Bobadilla &nbsp;·&nbsp; RUT: 18.434.197-2</p></div>
+<div class="pay"><div class="pay-t">Datos de Pago</div><p>Banco Estado — Cuenta Vista N° 282-7-049165-2</p><p>Nombre: ABASTECIMIENTO TOTAL SPA &nbsp;·&nbsp; RUT: 78.315.207-k</p></div>
 <p style="color:#999;font-size:10px;text-align:center;margin-bottom:16px">Validez: ${validez.value} días &nbsp;·&nbsp; Precios en pesos chilenos incluyen IVA.</p>
 <footer><span>Abastecimiento Total © ${now.getFullYear()}</span><span>${numero.value} — ${fecha}</span></footer>
 <script>setTimeout(function(){window.print()},400)<\/script></body></html>`
