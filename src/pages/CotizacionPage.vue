@@ -297,7 +297,7 @@ th:last-child,th:nth-last-child(2),th:nth-last-child(3){text-align:right}tbody t
 .pay{background:#f8f6f0;border-radius:8px;padding:16px 18px;margin-bottom:16px}.pay-t{font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#999;font-weight:700;margin-bottom:8px}
 .pay p{color:#444;font-size:11px;line-height:1.6}footer{margin-top:28px;padding-top:14px;border-top:1px solid #e5e0d5;display:flex;justify-content:space-between;font-size:10px;color:#aaa}
 @media print{@page{size:A4;margin:10mm 0}body{padding:20px 32px}}</style></head><body>
-<div class="hdr"><div><div class="co-name">Abastecimiento Total</div><div class="co-sub"><p>Giro: abastecimiento integral de bienes y servicios.</p><p>Dirección: Juan Francisco Gonzalez 852, Ñuñoa.</p><p>email: correo@abastecimientototal.cl</p></div></div>
+<div class="hdr"><div><div class="co-name">Abastecimiento Total</div><div class="co-sub"><p>Giro: Comercializadora de Articulos de Oficina, de Aseo y Abarrotes</p><p>RUT: 78.315.207-k</p><p>Dirección: Juan Francisco Gonzalez 852, Ñuñoa.</p><p>email: correo@abastecimientototal.cl</p></div></div>
 <div class="doc-r"><div class="lbl">Cotización</div><div class="doc-num">${numero.value}</div><div class="doc-date">${fecha}</div></div></div>
 <div class="lbl">Detalle de Solicitud</div>
 <div class="cgrid"><div class="cc"><div class="ck">Solicitante</div><div class="cv">${cliente.nombre||'—'}</div></div><div class="cc"><div class="ck">RUT</div><div class="cv">${cliente.rut||'—'}</div></div>

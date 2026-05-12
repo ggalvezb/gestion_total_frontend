@@ -106,8 +106,9 @@
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <DocGroup title="Documentos de compra" color="#c4884a">
+              <DocItem v-if="docTransporte" :doc="docTransporte" @delete="eliminarDoc(docTransporte._id)"/>
+              <DocItemEmpty v-else :label="TIPOS_DOC.factura_despacho.label"/>
               <DocItem v-for="d in docsCompra" :key="d._id" :doc="d" @delete="eliminarDoc(d._id)"/>
-              <div v-if="!docsCompra.length" style="font-size:12px;color:var(--text3);padding:6px 0">Sin documentos de compra</div>
             </DocGroup>
             <DocGroup title="Documentos de venta" color="var(--info)">
               <template v-for="tipo in VENTA_TIPOS" :key="tipo">
@@ -249,7 +250,8 @@ const { data: documentos = ref([]) } = useQuery({
   enabled:  computed(() => !!selectedId.value),
 })
 
-const docsCompra  = computed(() => (documentos.value||[]).filter(d=>['factura_compra','boleta_compra'].includes(d.tipo)))
+const docsCompra     = computed(() => (documentos.value||[]).filter(d=>['factura_compra','boleta_compra'].includes(d.tipo)))
+const docTransporte  = computed(() => (documentos.value||[]).find(d => d.tipo === 'factura_despacho'))
 const docVentaMap = computed(() => {
   const map = {}
   ;(documentos.value||[]).filter(d=>VENTA_TIPOS.includes(d.tipo)).forEach(d=>map[d.tipo]=d)
@@ -410,7 +412,7 @@ const ItemCard    = defineComponent({ props:['item'],emits:['add-parcial','edit-
         h('span',{style:{color:'var(--text3)'}},fmtFecha(parc.fecha)),
         estadoBadge(parc.estado||'comprado'),
         h('div',{style:{display:'flex',gap:'4px'}},[
-          parc.estado !== 'recibido' ? h('button',{onClick:()=>emit('mark-recibido',{itemId:p.item._id,idx}),title:'Marcar como recibido',style:{background:'transparent',border:'1px solid rgba(106,170,122,.3)',borderRadius:'4px',padding:'2px 8px',fontSize:'10px',fontWeight:600,color:'#4e9660',cursor:'pointer',whiteSpace:'nowrap'}},'✓ Recibido') : null,
+          parc.estado !== 'recibido' ? h('button',{onClick:()=>emit('mark-recibido',{itemId:p.item._id,idx}),title:'Marcar como recibido',style:{background:'transparent',border:'1px solid var(--border)',borderRadius:'4px',padding:'2px 8px',fontSize:'10px',fontWeight:600,color:'var(--text3)',cursor:'pointer',whiteSpace:'nowrap'}},'✓ Recibido') : null,
           iconBtn('neutral', Pencil, ()=>emit('edit-parcial',{item:p.item,idx})),
           iconBtn('danger', Trash2, ()=>emit('delete-parcial',{itemId:p.item._id,idx})),
         ]),

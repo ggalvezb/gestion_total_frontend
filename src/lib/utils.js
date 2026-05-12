@@ -64,9 +64,9 @@ export const TIPOS_DOC = {
   orden_de_compra:  { label: 'Orden de compra',    grupo: 'venta'  },
   guia_despacho:    { label: 'Guía de despacho',   grupo: 'venta'  },
   factura_venta:    { label: 'Factura de venta',   grupo: 'venta'  },
-  factura_despacho: { label: 'Factura despacho',   grupo: 'venta'  },
+  factura_despacho: { label: 'Factura transporte',  grupo: 'compra' },
 }
 
-export const VENTA_TIPOS = ['orden_de_compra', 'guia_despacho', 'factura_venta', 'factura_despacho']
+export const VENTA_TIPOS = ['orden_de_compra', 'guia_despacho', 'factura_venta']
 
 export const generarNumero = () => `COT-${new Date().getFullYear()}-${String(Math.floor(Math.random()*900)+100)}`
