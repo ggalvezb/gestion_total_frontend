@@ -74,10 +74,12 @@ const isAdmin = computed(() => auth.user?.rol === 'admin')
 const navLinks = computed(() => [
   { path: '/',                 label: 'Home' },
   { path: '/cotizacion/nueva', label: 'Nueva cotización' },
+  { path: '/proveedores',      label: 'Proveedores' },
   { path: '/logistica',        label: 'Logística' },
   ...(isAdmin.value ? [
     { path: '/costos-fijos',   label: 'Costos fijos' },
     { path: '/usuarios',       label: 'Usuarios' },
+    { path: '/dashboard',      label: 'Dashboard' },
   ] : []),
 ])
 

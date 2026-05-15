@@ -43,6 +43,14 @@ export const usuarioService = {
   eliminar:   (id)       => api.delete(`/usuarios/${id}`),
 }
 
+export const proveedorService = {
+  listar:     ()         => api.get('/proveedores').then(r => r.data),
+  obtener:    (id)       => api.get(`/proveedores/${id}`).then(r => r.data),
+  crear:      (data)     => api.post('/proveedores', data).then(r => r.data),
+  actualizar: (id, data) => api.patch(`/proveedores/${id}`, data).then(r => r.data),
+  eliminar:   (id)       => api.delete(`/proveedores/${id}`),
+}
+
 export const costoFijoService = {
   listar: () => api.get('/costos-fijos').then(r => r.data),
   crear: (data) => api.post('/costos-fijos', data).then(r => r.data),

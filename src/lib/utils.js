@@ -45,17 +45,19 @@ export const ESTADOS = {
   despachado: { label: 'Despachado', color: 'shipped'  },
   rechazada:  { label: 'Rechazada',  color: 'rejected' },
   expirada:   { label: 'Expirada',   color: 'draft'    },
+  desierta:   { label: 'Desierta',   color: 'desert'   },
 }
 
 export const TRANSICIONES = {
   borrador:   ['enviada', 'rechazada'],
-  enviada:    ['aprobada', 'rechazada', 'expirada'],
+  enviada:    ['aprobada', 'rechazada', 'expirada', 'desierta'],
   aprobada:   ['en_compra', 'rechazada'],
   en_compra:  [],
   comprada:   ['despachado'],
   despachado: ['comprada'],
   rechazada:  ['borrador'],
   expirada:   ['borrador'],
+  desierta:   ['borrador'],
 }
 
 export const TIPOS_DOC = {

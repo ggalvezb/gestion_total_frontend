@@ -12,6 +12,7 @@ const map = {
   done:     { bg: 'rgba(106,170,122,.1)', color: '#4e9660',      border: '1px solid rgba(106,170,122,.2)' },
   shipped:  { bg: 'rgba(20,184,166,.1)', color: '#0d9488',       border: '1px solid rgba(20,184,166,.2)' },
   rejected: { bg: 'var(--danger-dim)', color: 'var(--danger)',   border: '1px solid rgba(196,92,58,.25)' },
+  desert:   { bg: 'rgba(139,92,246,.1)', color: '#8b5cf6',       border: '1px solid rgba(139,92,246,.25)' },
 }
 const s = map[props.estado] || map.draft
 const style = {

@@ -95,6 +95,7 @@
             <AppBtn variant="ghost" size="sm" @click="tab=0"><ChevronLeft :size="13"/> Volver</AppBtn>
             <div style="display:flex;gap:8px">
               <AppBtn variant="ghost" size="sm" @click="descargarCotizacionPDF"><Download :size="13"/> Cotización PDF</AppBtn>
+              <AppBtn variant="ghost" size="sm" @click="descargarCotizacionWord"><Download :size="13"/> Cotización Word</AppBtn>
               <AppBtn size="sm" @click="descargarFichaTecnica"><Download :size="13"/> Descargar ficha</AppBtn>
             </div>
           </div>
@@ -148,6 +149,7 @@
           </AppBtn>
           <div style="height:1px;background:var(--border);margin:4px 0"/>
           <DocBtn @click="descargarCotizacionPDF"><Download :size="12"/> Descargar cotización PDF</DocBtn>
+          <DocBtn @click="descargarCotizacionWord"><Download :size="12"/> Descargar cotización Word</DocBtn>
           <DocBtn @click="descargarFichaTecnica"><Download :size="12"/> Ficha técnica</DocBtn>
           <DocBtn dashed @click="descargarCotizacionInterna"><Download :size="12"/> Cotización interna</DocBtn>
         </div>
@@ -314,6 +316,174 @@ th:last-child,th:nth-last-child(2),th:nth-last-child(3){text-align:right}tbody t
   const win = window.open('', '_blank')
   win.document.write(html)
   win.document.close()
+}
+
+async function descargarCotizacionWord() {
+  const {
+    Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+    AlignmentType, WidthType, BorderStyle, ShadingType, convertInchesToTwip,
+  } = await import('docx')
+
+  const c      = calculos.value
+  const total  = c.precio_venta_total, neto = c.neto_venta, iva = c.iva_credito
+  const factor = total / (c.valor_compra || 1)
+  const u      = auth.user || {}
+  const now    = new Date()
+  const fecha  = now.toLocaleDateString('es-CL', { day:'2-digit', month:'long', year:'numeric' })
+
+  const thin = (color = 'e5e0d5') => ({
+    top:    { style: BorderStyle.SINGLE, size: 4, color },
+    bottom: { style: BorderStyle.SINGLE, size: 4, color },
+    left:   { style: BorderStyle.SINGLE, size: 4, color },
+    right:  { style: BorderStyle.SINGLE, size: 4, color },
+  })
+  const none = () => ({
+    top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE },
+    left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE },
+  })
+  const cell = (text, opts = {}) => new TableCell({
+    children: [new Paragraph({
+      children: [new TextRun({ text, size: opts.size || 20, bold: opts.bold, color: opts.color, font: opts.mono ? 'Courier New' : undefined })],
+      alignment: opts.align || AlignmentType.LEFT,
+    })],
+    shading:  opts.bg    ? { fill: opts.bg, type: ShadingType.SOLID } : undefined,
+    borders:  opts.noborder ? none() : thin(opts.borderColor),
+    margins:  { top: 100, bottom: 100, left: 140, right: 140 },
+    width:    opts.width ? { size: opts.width, type: WidthType.PERCENTAGE } : undefined,
+  })
+  const labelCell = (label, value) => new TableCell({
+    children: [
+      new Paragraph({ children: [new TextRun({ text: label, size: 14, bold: true, color: '999999' })], spacing: { after: 40 } }),
+      new Paragraph({ children: [new TextRun({ text: value || '—', size: 22, bold: true })] }),
+    ],
+    borders: thin(),
+    margins: { top: 120, bottom: 120, left: 180, right: 180 },
+  })
+
+  const productRows = productos.value.filter(p => p.desc && p.cantidad > 0).map((p, i) => {
+    const unit = Math.round(p.precio_compra * factor / 1.19)
+    return new TableRow({ children: [
+      cell(String(i+1), { color: '888888', width: 5 }),
+      cell(p.desc, { width: 47 }),
+      cell(String(p.cantidad), { align: AlignmentType.RIGHT, width: 10 }),
+      cell(`$ ${_n(unit)}`, { align: AlignmentType.RIGHT, mono: true, width: 19 }),
+      cell(`$ ${_n(unit * p.cantidad)}`, { align: AlignmentType.RIGHT, mono: true, width: 19 }),
+    ]})
+  })
+
+  const doc = new Document({
+    creator: 'Abastecimiento Total',
+    title:   numero.value,
+    sections: [{
+      properties: { page: { margin: {
+        top: convertInchesToTwip(0.8), bottom: convertInchesToTwip(0.8),
+        left: convertInchesToTwip(0.8), right: convertInchesToTwip(0.8),
+      }}},
+      children: [
+        // Nombre empresa
+        new Paragraph({
+          children: [new TextRun({ text: 'Abastecimiento Total', bold: true, size: 48, font: 'Times New Roman' })],
+          spacing: { after: 60 },
+        }),
+        new Paragraph({ children: [new TextRun({ text: 'Giro: Comercializadora de Articulos de Oficina, de Aseo y Abarrotes', size: 18, color: '666666' })], spacing: { after: 40 } }),
+        new Paragraph({ children: [new TextRun({ text: 'RUT: 78.315.207-k', size: 18, color: '666666' })], spacing: { after: 40 } }),
+        new Paragraph({ children: [new TextRun({ text: 'Dirección: Juan Francisco Gonzalez 852, Ñuñoa', size: 18, color: '666666' })], spacing: { after: 40 } }),
+        new Paragraph({
+          children: [new TextRun({ text: 'email: correo@abastecimientototal.cl', size: 18, color: '666666' })],
+          spacing: { after: 160 },
+          border: { bottom: { style: BorderStyle.THICK, size: 12, color: 'c9a84c' } },
+        }),
+        // N° cotización
+        new Paragraph({
+          children: [new TextRun({ text: `COTIZACIÓN  ${numero.value}  ·  ${fecha}`, size: 20, color: 'c9a84c', font: 'Courier New' })],
+          alignment: AlignmentType.RIGHT,
+          spacing: { before: 120, after: 240 },
+        }),
+
+        // Título sección
+        new Paragraph({ children: [new TextRun({ text: 'DETALLE DE SOLICITUD', size: 16, bold: true, color: '999999' })], spacing: { after: 100 } }),
+
+        // Tabla cliente
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [
+            new TableRow({ children: [labelCell('SOLICITANTE', cliente.nombre), labelCell('RUT', cliente.rut)] }),
+            new TableRow({ children: [labelCell('DIRECCIÓN', cliente.direccion), labelCell('CIUDAD', cliente.ciudad)] }),
+          ],
+        }),
+
+        // Ejecutivo
+        new Paragraph({
+          children: [new TextRun({ text: `Ejecutivo: ${u.nombre || '—'}  ·  ${u.telefono || '—'}  ·  ${u.email || '—'}`, size: 18, color: '555555' })],
+          spacing: { before: 160, after: 200 },
+        }),
+
+        // Título productos
+        new Paragraph({ children: [new TextRun({ text: 'PRODUCTOS', size: 16, bold: true, color: '999999' })], spacing: { after: 100 } }),
+
+        // Tabla productos
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [
+            new TableRow({ tableHeader: true, children: ['#','Descripción','Cant.','Val. Unit. ($)','Total ($)'].map((t, i) =>
+              cell(t, { bold: true, color: 'FFFFFF', bg: '1a1a1a', size: 18, align: i >= 2 ? AlignmentType.RIGHT : AlignmentType.LEFT })
+            )}),
+            ...productRows,
+          ],
+        }),
+
+        // Totales
+        new Paragraph({ spacing: { before: 200, after: 60 } }),
+        new Paragraph({ children: [new TextRun({ text: `Neto:      $ ${_n(neto)}`, size: 20, color: '555555', font: 'Courier New' })], alignment: AlignmentType.RIGHT, spacing: { after: 60 } }),
+        new Paragraph({ children: [new TextRun({ text: `IVA (19%): $ ${_n(iva)}`, size: 20, color: '555555', font: 'Courier New' })], alignment: AlignmentType.RIGHT, spacing: { after: 80 } }),
+        new Paragraph({ children: [new TextRun({ text: `TOTAL:     $ ${_n(total)}`, size: 24, bold: true, font: 'Courier New', color: 'c9a84c' })], alignment: AlignmentType.RIGHT, spacing: { after: 200 } }),
+
+        // Despacho
+        new Paragraph({
+          children: [new TextRun({ text: 'Días de despacho: ', size: 22, color: '555555' }), new TextRun({ text: `${despacho.value || 3} días`, size: 22, bold: true })],
+          spacing: { after: 160 },
+        }),
+
+        // Datos de pago
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [new TableRow({ children: [new TableCell({
+            children: [
+              new Paragraph({ children: [new TextRun({ text: 'DATOS DE PAGO', size: 16, bold: true, color: '999999' })], spacing: { after: 80 } }),
+              new Paragraph({ children: [new TextRun({ text: 'Banco Estado — Cuenta Vista N° 282-7-049165-2', size: 20, color: '444444' })], spacing: { after: 60 } }),
+              new Paragraph({ children: [new TextRun({ text: 'Nombre: ABASTECIMIENTO TOTAL SPA  ·  RUT: 78.315.207-k', size: 20, color: '444444' })] }),
+            ],
+            borders: thin(),
+            margins: { top: 160, bottom: 160, left: 180, right: 180 },
+          })]})],
+        }),
+
+        // Validez
+        new Paragraph({
+          children: [new TextRun({ text: `Validez: ${validez.value} días  ·  Precios en pesos chilenos incluyen IVA.`, size: 18, color: 'aaaaaa' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 200, after: 120 },
+        }),
+        // Footer
+        new Paragraph({
+          children: [new TextRun({ text: `Abastecimiento Total © ${now.getFullYear()}   |   ${numero.value} — ${fecha}`, size: 16, color: 'aaaaaa' })],
+          alignment: AlignmentType.CENTER,
+          border: { top: { style: BorderStyle.SINGLE, size: 4, color: 'e5e0d5' } },
+          spacing: { before: 100 },
+        }),
+      ],
+    }],
+  })
+
+  const blob = await Packer.toBlob(doc)
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = `${numero.value}.docx`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 function descargarFichaTecnica() {

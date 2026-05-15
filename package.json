@@ -9,13 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.4.27",
-    "vue-router": "^4.3.3",
-    "pinia": "^2.1.7",
-    "axios": "^1.7.2",
     "@tanstack/vue-query": "^5.40.0",
-"date-fns": "^3.6.0",
-    "lucide-vue-next": "^0.383.0"
+    "axios": "^1.7.2",
+    "date-fns": "^3.6.0",
+    "docx": "^9.6.1",
+    "lucide-vue-next": "^0.383.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.27",
+    "vue-router": "^4.3.3"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",
